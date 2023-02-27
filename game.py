@@ -101,16 +101,16 @@ while running:
     if ball_pos[0] <= paddle_width + paddle1_pos[0]:
         if paddle1_pos[1] - ball_height <= ball_pos[1] <= paddle1_pos[1] + paddle_height and \
         ball_pos[0] >= paddle1_pos[0] + ball_width / 2:
-            ball_vel[0] = -ball_vel[0]
+            ball_vel[0] = -ball_vel[0] + 1
+            ball_vel[1] += 1 if ball_vel[1] > 0 else -1
             ball_pos[0] = paddle1_pos[0] + paddle_width
-            print("1")
 
     elif ball_pos[0] >= window_size[0] - ball_width - (window_size[0] - paddle2_pos[0]):
         if paddle2_pos[1] - ball_height <= ball_pos[1] <= paddle2_pos[1] + paddle_height and \
-        ball_pos[0] <= paddle2_pos[0] + paddle_width - ball_width / 2:
-            ball_vel[0] = -ball_vel[0]
+        ball_pos[0] <= paddle2_pos[0] - ball_width / 2:
+            ball_vel[0] = -ball_vel[0] - 1
+            ball_vel[1] += 1 if ball_vel[1] > 0 else -1
             ball_pos[0] = paddle2_pos[0] - paddle_width
-            print("2")
 
     # check for collisions with the top and bottom of the screen
     if ball_pos[1] <= 0 or ball_pos[1] >= window_size[1] - ball_height:
