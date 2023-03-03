@@ -1,0 +1,7 @@
+- refactor to oop
+- angular paddle bounce-off
+- decouple tickrate and fps
+- increase ticketrate to resolve the ball jumping over the paddle at higher speeds.
+- implement genetic algorithm AI
+- implement reinforcement learning AI
+- extra: implement NEAT AI
