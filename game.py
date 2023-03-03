@@ -1,152 +1,152 @@
 import pygame
 
-# initialize Pygame
-pygame.init()
 
-# set the window size
-window_size = (800, 600)
+class Paddle:
+    def __init__(self, x, y, width, height, color):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.vel = 0
 
-# create the Pygame window
-screen = pygame.display.set_mode(window_size)
+    def move(self, window_height):
+        self.y = max(min(self.y + self.vel, window_height - self.height), 0)
 
-# set the window title
-pygame.display.set_caption("Pong")
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, pygame.Rect(
+            self.x, self.y, self.width, self.height))
 
-# set the clock for controlling the game's FPS
-clock = pygame.time.Clock()
 
-# set the colors
-black = (0, 0, 0)
-white = (255, 255, 255)
+class Ball:
+    def __init__(self, x, y, width, height, color, vel, window_width, window_height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.vel = vel
+        self.window_width = window_width
+        self.window_height = window_height
 
-# create the fonts
-font = pygame.font.Font(None, 36)
+    def move(self):
+        self.x += int(self.vel[0])
+        self.y += int(self.vel[1])
 
-# create the sound effects
-# pong_sound = pygame.mixer.Sound('pong.wav')
-# score_sound = pygame.mixer.Sound('score.wav')
+    def reset_position(self, sign):
+        self.x = self.window_width // 2
+        self.y = self.window_height // 2
+        self.vel = [sign *4, sign * 4]
 
-# set the initial velocities of the paddles and ball
-paddle1_vel = 0
-paddle2_vel = 0
-ball_vel = [4, 4]
-paddle_speed = 4
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, pygame.Rect(
+            self.x, self.y, self.width, self.height))
 
-# set the sizes of the paddles and ball
-paddle_width = 10
-paddle_height = 100
-ball_width = 10
-ball_height = 10
 
-# set the initial positions of the paddles and ball
-paddle1_pos = [50, 250]
-paddle2_pos = [750 - paddle_width, 250]
-ball_pos = [400, 300]
+class Game:
+    def __init__(self, window_width=800, window_height=600, fps=60):
+        self.window_width = window_width
+        self.window_height = window_height
+        self.fps = fps
+        self.screen = pygame.display.set_mode((self.window_width, self.window_height))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, 36)
+        self.paddle1 = Paddle(50, 250, 10, 100, white)
+        self.paddle2 = Paddle(750 - 10, 250, 10, 100, white)
+        self.ball = Ball(400, 300, 10, 10, white, [4, 4], window_width, window_height)
+        self.score1 = 0
+        self.score2 = 0
+        self.game_over = False
 
-# initialize the scores
-score1 = 0
-score2 = 0
+    def draw_objects(self):
+        # Draw paddles and ball
+        self.ball.draw(self.screen)
+        self.paddle1.draw(self.screen)
+        self.paddle2.draw(self.screen)
 
-# main game loop
-running = True
-while running:
-    # handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
+        # Draw scores
+        score_text = f"{self.score1} - {self.score2}"
+        text_surface = self.font.render(score_text, True, white)
+        text_rect = text_surface.get_rect(center=(self.window_width/2, 50))
+        self.screen.blit(text_surface, text_rect)
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        paddle2_vel = -paddle_speed
-    elif keys[pygame.K_DOWN]:
-        paddle2_vel = paddle_speed
-    else:
-        paddle2_vel = 0
+    def run(self):
+        while not self.game_over:
+            # Handle events (user input)
+            if not self.handle_events():
+                break
 
-    if keys[pygame.K_w]:
-        paddle1_vel = -paddle_speed
-    elif keys[pygame.K_s]:
-        paddle1_vel = paddle_speed
-    else:
-        paddle1_vel = 0
+            # Update game state
+            self.update_game_logic()
 
-    # update the positions of the paddles
-    paddle1_pos[1] = max(min(paddle1_pos[1] + paddle1_vel, window_size[1] - paddle_height), 0)
-    paddle2_pos[1] = max(min(paddle2_pos[1] + paddle2_vel, window_size[1] - paddle_height), 0)
+            # Draw the updated game state to the screen
+            self.screen.fill(black)
+            self.draw_objects()
+            pygame.display.update()
 
-    # update the game logic
-    # update the position of the paddles based on their velocities
-    # paddle1_pos[1] += paddle1_vel
-    # paddle2_pos[1] += paddle2_vel
+            # Pause briefly to slow down the game loop
+            self.clock.tick(self.fps)
 
-    # ensure that the paddles stay within the screen boundaries
-    if paddle1_pos[1] < 0:
-        paddle1_pos[1] = 0
-    elif paddle1_pos[1] > window_size[1] - paddle_height:
-        paddle1_pos[1] = window_size[1] - paddle_height
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return False
 
-    if paddle2_pos[1] < 0:
-        paddle2_pos[1] = 0
-    elif paddle2_pos[1] > window_size[1] - paddle_height:
-        paddle2_pos[1] = window_size[1] - paddle_height
+        keys = pygame.key.get_pressed()
+        self.paddle2.vel = - 4 if keys[pygame.K_UP] else 4 if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = - 4 if keys[pygame.K_w] else 4 if keys[pygame.K_s] else 0
 
-    # update the position of the ball based on its velocity
-    ball_pos[0] += ball_vel[0]
-    ball_pos[1] += ball_vel[1]
+        return True
 
-    # check for collisions between the ball and the paddles
-    if ball_pos[0] <= paddle_width + paddle1_pos[0]:
-        if paddle1_pos[1] - ball_height <= ball_pos[1] <= paddle1_pos[1] + paddle_height and \
-        ball_pos[0] >= paddle1_pos[0] + ball_width / 2:
-            ball_vel[0] = -ball_vel[0] + 1
-            ball_vel[1] += 1 if ball_vel[1] > 0 else -1
-            ball_pos[0] = paddle1_pos[0] + paddle_width
+    def update_game_logic(self):
+        self.paddle1.move(self.window_height)
+        self.paddle2.move(self.window_height)
+        self.ball.move()
 
-    elif ball_pos[0] >= window_size[0] - ball_width - (window_size[0] - paddle2_pos[0]):
-        if paddle2_pos[1] - ball_height <= ball_pos[1] <= paddle2_pos[1] + paddle_height and \
-        ball_pos[0] <= paddle2_pos[0] - ball_width / 2:
-            ball_vel[0] = -ball_vel[0] - 1
-            ball_vel[1] += 1 if ball_vel[1] > 0 else -1
-            ball_pos[0] = paddle2_pos[0] - paddle_width
+        # Check collision with left paddle
+        if self.ball.x <= self.paddle1.x + self.paddle1.width:
+            if self.paddle1.y - self.ball.height <= self.ball.y <= self.paddle1.y + self.paddle1.height and self.ball.x >= self.paddle1.x + self.paddle1.width // 2:
+                self.ball.vel[0] = -self.ball.vel[0] + 0.5
+                self.ball.x = self.paddle1.x + self.paddle2.width
 
-    # check for collisions with the top and bottom of the screen
-    if ball_pos[1] <= 0 or ball_pos[1] >= window_size[1] - ball_height:
-        ball_vel[1] = -ball_vel[1]
+        # Check collision with right paddle
+        if self.ball.x + self.ball.width >= self.paddle2.x:
+            if self.paddle2.y - self.ball.height <= self.ball.y <= self.paddle2.y + self.paddle2.height and self.ball.x <= self.paddle2.x + self.paddle2.width // 2:
+                self.ball.vel[0] = -self.ball.vel[0] - 0.5
+                self.ball.x = self.paddle2.x - self.paddle2.width
 
-    # check for collisions with the left and right sides of the screen
-    if ball_pos[0] < 0:
-        ball_pos = [300, 200]
-        ball_vel = [4, 4]
-        score2 += 1
-    elif ball_pos[0] > window_size[0] - ball_width:
-        ball_pos = [300, 200]
-        ball_vel = [-4, -4]
-        score1 += 1
+        # Check collision with top/bottom walls
+        if self.ball.y <= self.ball.height/2 or self.ball.y + self.ball.height/2 >= self.window_height:
+            self.ball.vel[1] = -self.ball.vel[1]
 
-    # update the velocity of the ball based on the paddle's velocity
-    # ball_vel[0] += 0.1 * ball_vel[0] * abs(paddle1_vel + paddle2_vel) / 20
-    # ball_vel[1] += 0.1 * ball_vel[1] * abs(paddle1_vel + paddle2_vel) / 20
+        # Check if ball goes past left/right walls
+        if self.ball.x <= 0:
+            self.score2 += 1
+            self.ball.reset_position(1)
+        elif self.ball.x + self.ball.width >= self.window_width:
+            self.score1 += 1
+            self.ball.reset_position(-1)
 
-    # clear the screen
-    screen.fill(black)
 
-    # draw the paddles and ball
-    pygame.draw.rect(screen, white, [paddle1_pos[0], paddle1_pos[1], paddle_width, paddle_height])
-    pygame.draw.rect(screen, white, [paddle2_pos[0], paddle2_pos[1], paddle_width, paddle_height])
-    pygame.draw.rect(screen, white, [ball_pos[0], ball_pos[1], ball_width, ball_height])
+if __name__ == '__main__':
+    # initialize Pygame
+    pygame.init()
 
-    # draw the score
-    score_text = font.render(str(score1) + " - " + str(score2), True, white)
-    screen.blit(score_text, [window_size[0] // 2 - score_text.get_width() // 2, 10])
+    # set the window size
+    window_size = (800, 600)
 
-    # update the display
-    pygame.display.update()
+    # create the Pygame window
+    screen = pygame.display.set_mode(window_size)
 
-    # control the game's FPS
-    clock.tick(60)
+    # set the colors
+    black = (0, 0, 0)
+    white = (255, 255, 255)
 
-# quit Pygame
-pygame.quit()
+    # set the window title
+    pygame.display.set_caption("Pong")
+
+    game = Game()
+    game.run()
