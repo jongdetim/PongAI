@@ -1,5 +1,8 @@
 import pygame
 
+# define colors
+black = (0, 0, 0)
+white = (255, 255, 255)
 
 class Paddle:
     def __init__(self, x, y, width, height, color):
@@ -10,12 +13,12 @@ class Paddle:
         self.color = color
         self.vel = 0
 
-    def move(self, window_height):
-        self.y = max(min(self.y + self.vel, window_height - self.height), 0)
+    def move(self, window_height, dt):
+        self.y = max(min(self.y + self.vel / (1000 / dt), window_height - self.height), 0)
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, pygame.Rect(
-            self.x, self.y, self.width, self.height))
+            round(self.x), round(self.y), self.width, self.height))
 
 
 class Ball:
@@ -29,34 +32,35 @@ class Ball:
         self.window_width = window_width
         self.window_height = window_height
 
-    def move(self):
-        self.x += int(self.vel[0])
-        self.y += int(self.vel[1])
+    def move(self, dt):
+        self.x += self.vel[0] / (1000 / dt)
+        self.y += self.vel[1] / (1000 / dt)
 
     def reset_position(self, sign):
         self.x = self.window_width // 2
         self.y = self.window_height // 2
-        self.vel = [sign *4, sign * 4]
+        self.vel = [sign * 175, sign * 175]
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, pygame.Rect(
-            self.x, self.y, self.width, self.height))
+            round(self.x), round(self.y), self.width, self.height))
 
 
 class Game:
-    def __init__(self, window_width=800, window_height=600, fps=60):
+    def __init__(self, window_width=800, window_height=600, logic_fps=120, render_fps=60):
         self.window_width = window_width
         self.window_height = window_height
-        self.fps = fps
+        self.logic_fps = logic_fps
+        self.render_fps = render_fps
         self.screen = pygame.display.set_mode((self.window_width, self.window_height))
-        self.clock = pygame.time.Clock()
+        self.render_clock = pygame.time.Clock()
+        self.logic_clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
         self.paddle1 = Paddle(50, 250, 10, 100, white)
         self.paddle2 = Paddle(750 - 10, 250, 10, 100, white)
-        self.ball = Ball(400, 300, 10, 10, white, [4, 4], window_width, window_height)
+        self.ball = Ball(400, 300, 10, 10, white, [175, 175], window_width, window_height)
         self.score1 = 0
         self.score2 = 0
-        self.game_over = False
 
     def draw_objects(self):
         # Draw paddles and ball
@@ -70,24 +74,45 @@ class Game:
         text_rect = text_surface.get_rect(center=(self.window_width/2, 50))
         self.screen.blit(text_surface, text_rect)
 
-    def run(self):
-        while not self.game_over:
-            # Handle events (user input)
-            if not self.handle_events():
-                break
+    # def run(self):
+    #     while self.handle_events():
+    #         # Update game state
+    #         self.logic_clock.tick(self.logic_fps)
+    #         self.update_game_logic()
 
+    #         # Draw the updated game state to the screen
+    #         self.render_clock.tick(self.render_fps)
+    #         self.screen.fill(black)
+    #         self.draw_objects()
+    #         pygame.display.update()
+
+    #         # Pause briefly to slow down the game loop
+    #         # print("frametime: ", self.clock.tick(self.fps))
+            
+    def run_decoupled_fps(self):
+        last_render_time = pygame.time.get_ticks()
+        while True:
             # Update game state
-            self.update_game_logic()
-
-            # Draw the updated game state to the screen
-            self.screen.fill(black)
-            self.draw_objects()
-            pygame.display.update()
+            print("updating game logic")
+            dt = self.logic_clock.tick(self.logic_fps)
+            print("logic tick dt: ", dt)
+            if not self.handle_events(dt):
+                break
+            self.update_game_logic(dt)
+            
+            # Render the frame
+            if pygame.time.get_ticks() - last_render_time >= 1000 / self.render_fps:
+                print("rendering frame")
+                print("frametime: ", pygame.time.get_ticks() - last_render_time)
+                last_render_time = pygame.time.get_ticks()
+                self.screen.fill(black)
+                self.draw_objects()
+                pygame.display.update()
 
             # Pause briefly to slow down the game loop
-            self.clock.tick(self.fps)
+            # print("frametime: ", self.clock.tick(self.fps))
 
-    def handle_events(self):
+    def handle_events(self, dt):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -96,31 +121,36 @@ class Game:
                     return False
 
         keys = pygame.key.get_pressed()
-        self.paddle2.vel = - 4 if keys[pygame.K_UP] else 4 if keys[pygame.K_DOWN] else 0
-        self.paddle1.vel = - 4 if keys[pygame.K_w] else 4 if keys[pygame.K_s] else 0
+        self.paddle2.vel = -300 if keys[pygame.K_UP] else 300 if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = -300 if keys[pygame.K_w] else 300 if keys[pygame.K_s] else 0
 
         return True
 
-    def update_game_logic(self):
-        self.paddle1.move(self.window_height)
-        self.paddle2.move(self.window_height)
-        self.ball.move()
+    def update_game_logic(self, dt):
+        self.paddle1.move(self.window_height, dt)
+        self.paddle2.move(self.window_height, dt)
+        self.ball.move(dt)
 
         # Check collision with left paddle
-        if self.ball.x <= self.paddle1.x + self.paddle1.width:
+        if self.ball.x <= self.paddle1.x + self.ball.width:
             if self.paddle1.y - self.ball.height <= self.ball.y <= self.paddle1.y + self.paddle1.height and self.ball.x >= self.paddle1.x + self.paddle1.width // 2:
-                self.ball.vel[0] = -self.ball.vel[0] + 0.5
-                self.ball.x = self.paddle1.x + self.paddle2.width
+                self.ball.vel[0] = -self.ball.vel[0] + 30
+                self.ball.x = self.paddle1.x + self.paddle1.width
 
         # Check collision with right paddle
         if self.ball.x + self.ball.width >= self.paddle2.x:
             if self.paddle2.y - self.ball.height <= self.ball.y <= self.paddle2.y + self.paddle2.height and self.ball.x <= self.paddle2.x + self.paddle2.width // 2:
-                self.ball.vel[0] = -self.ball.vel[0] - 0.5
+                self.ball.vel[0] = -self.ball.vel[0] - 30
                 self.ball.x = self.paddle2.x - self.paddle2.width
 
         # Check collision with top/bottom walls
-        if self.ball.y <= self.ball.height/2 or self.ball.y + self.ball.height/2 >= self.window_height:
-            self.ball.vel[1] = -self.ball.vel[1]
+        if self.ball.y <= 0:
+            self.ball.vel[1] *= -1
+            self.ball.y = 0
+            
+        elif self.ball.y + self.ball.height/2 >= self.window_height:
+            self.ball.vel[1] *= -1
+            self.ball.y = self.window_height - self.ball.height
 
         # Check if ball goes past left/right walls
         if self.ball.x <= 0:
@@ -135,18 +165,16 @@ if __name__ == '__main__':
     # initialize Pygame
     pygame.init()
 
-    # set the window size
+    # set the window size and fps
     window_size = (800, 600)
+    logic_fps = 300
+    render_fps = 60
 
     # create the Pygame window
     screen = pygame.display.set_mode(window_size)
 
-    # set the colors
-    black = (0, 0, 0)
-    white = (255, 255, 255)
-
     # set the window title
     pygame.display.set_caption("Pong")
 
-    game = Game()
-    game.run()
+    game = Game(*window_size, logic_fps, render_fps)
+    game.run_decoupled_fps()
