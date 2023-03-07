@@ -1,8 +1,11 @@
+import math
 import pygame
 
 # define colors
 black = (0, 0, 0)
 white = (255, 255, 255)
+
+BALL_SPEED_INCREASE = 25
 
 class Paddle:
     def __init__(self, x, y, width, height, color):
@@ -95,7 +98,7 @@ class Game:
             # Update game state
             print("updating game logic")
             dt = self.logic_clock.tick(self.logic_fps)
-            print("logic tick dt: ", dt)
+            print("logic tick dt: ", dt, "ms")
             if not self.handle_events(dt):
                 break
             self.update_game_logic(dt)
@@ -103,7 +106,7 @@ class Game:
             # Render the frame
             if pygame.time.get_ticks() - last_render_time >= 1000 / self.render_fps:
                 print("rendering frame")
-                print("frametime: ", pygame.time.get_ticks() - last_render_time)
+                print("frametime: ", pygame.time.get_ticks() - last_render_time, "ms")
                 last_render_time = pygame.time.get_ticks()
                 self.screen.fill(black)
                 self.draw_objects()
@@ -127,20 +130,35 @@ class Game:
         return True
 
     def update_game_logic(self, dt):
+        # Move the paddles
         self.paddle1.move(self.window_height, dt)
         self.paddle2.move(self.window_height, dt)
+
+        # Move the ball
         self.ball.move(dt)
 
         # Check collision with left paddle
         if self.ball.x <= self.paddle1.x + self.ball.width:
             if self.paddle1.y - self.ball.height <= self.ball.y <= self.paddle1.y + self.paddle1.height and self.ball.x >= self.paddle1.x + self.paddle1.width // 2:
-                self.ball.vel[0] = -self.ball.vel[0] + 30
+                # Calculate the angle of impact
+                relative_intersect_y = (self.paddle1.y + self.paddle1.height / 2) - self.ball.y
+                normalized_intersect_y = relative_intersect_y / (self.paddle1.height / 2)
+                bounce_angle = normalized_intersect_y * math.pi / 3
+                # Adjust the velocity of the ball based on the angle of impact
+                self.ball.vel[0] = abs(self.ball.vel[0]) + BALL_SPEED_INCREASE
+                self.ball.vel[1] = -self.ball.vel[0] * math.sin(bounce_angle)
                 self.ball.x = self.paddle1.x + self.paddle1.width
 
         # Check collision with right paddle
         if self.ball.x + self.ball.width >= self.paddle2.x:
             if self.paddle2.y - self.ball.height <= self.ball.y <= self.paddle2.y + self.paddle2.height and self.ball.x <= self.paddle2.x + self.paddle2.width // 2:
-                self.ball.vel[0] = -self.ball.vel[0] - 30
+                # Calculate the angle of impact
+                relative_intersect_y = (self.paddle2.y + self.paddle2.height / 2) - self.ball.y
+                normalized_intersect_y = relative_intersect_y / (self.paddle2.height / 2)
+                bounce_angle = normalized_intersect_y * math.pi / 3
+                # Adjust the velocity of the ball based on the angle of impact
+                self.ball.vel[0] = -abs(self.ball.vel[0]) - BALL_SPEED_INCREASE
+                self.ball.vel[1] = self.ball.vel[0] * math.sin(bounce_angle)
                 self.ball.x = self.paddle2.x - self.paddle2.width
 
         # Check collision with top/bottom walls
@@ -148,15 +166,15 @@ class Game:
             self.ball.vel[1] *= -1
             self.ball.y = 0
             
-        elif self.ball.y + self.ball.height/2 >= self.window_height:
+        elif self.ball.y + self.ball.height >= self.window_height:
             self.ball.vel[1] *= -1
             self.ball.y = self.window_height - self.ball.height
 
-        # Check if ball goes past left/right walls
-        if self.ball.x <= 0:
+        # Check if the ball has gone off the left or right edge of the screen
+        if self.ball.x < -self.ball.width:
             self.score2 += 1
             self.ball.reset_position(1)
-        elif self.ball.x + self.ball.width >= self.window_width:
+        elif self.ball.x > self.window_width:
             self.score1 += 1
             self.ball.reset_position(-1)
 
