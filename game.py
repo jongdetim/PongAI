@@ -96,17 +96,17 @@ class Game:
         last_render_time = pygame.time.get_ticks()
         while True:
             # Update game state
-            print("updating game logic")
+            # print("updating game logic")
             dt = self.logic_clock.tick(self.logic_fps)
-            print("logic tick dt: ", dt, "ms")
+            # print("logic tick dt: ", dt, "ms")
             if not self.handle_events(dt):
                 break
             self.update_game_logic(dt)
             
             # Render the frame
             if pygame.time.get_ticks() - last_render_time >= 1000 / self.render_fps:
-                print("rendering frame")
-                print("frametime: ", pygame.time.get_ticks() - last_render_time, "ms")
+                # print("rendering frame")
+                # print("frametime: ", pygame.time.get_ticks() - last_render_time, "ms")
                 last_render_time = pygame.time.get_ticks()
                 self.screen.fill(black)
                 self.draw_objects()
@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
     # set the window size and fps
     window_size = (800, 600)
-    logic_fps = 300
+    logic_fps = 180
     render_fps = 60
 
     # create the Pygame window

@@ -1,13 +1,14 @@
 - refactor to oop
 - decouple tickrate and fps
 - increase ticketrate to resolve the ball jumping over the paddle at higher speeds.
+- angular paddle bounce-off
 
 ^^^____DONE____^^^
 
 - even with at 300 game logic update per second, the ball jumps over the paddle at higher speeds.
-        -> implement continuous collision checking between balls and paddle.
+        -> implement linear interpolation to solve this
 
-- angular paddle bounce-off
+- running headless
 - implement genetic algorithm AI
 - implement reinforcement learning AI
 - extra: implement NEAT AI
