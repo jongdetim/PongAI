@@ -27,7 +27,9 @@ class Paddle:
 class Ball:
     def __init__(self, x, y, width, height, color, vel, window_width, window_height):
         self.x = x
+        self.prev_x = x
         self.y = y
+        self.prev_y = y
         self.width = width
         self.height = height
         self.color = color
@@ -36,6 +38,8 @@ class Ball:
         self.window_height = window_height
 
     def move(self, dt):
+        self.prev_x = self.x
+        self.prev_y = self.y
         self.x += self.vel[0] / (1000 / dt)
         self.y += self.vel[1] / (1000 / dt)
 
@@ -137,29 +141,40 @@ class Game:
         # Move the ball
         self.ball.move(dt)
 
-        # Check collision with left paddle
-        if self.ball.x <= self.paddle1.x + self.ball.width:
-            if self.paddle1.y - self.ball.height <= self.ball.y <= self.paddle1.y + self.paddle1.height and self.ball.x >= self.paddle1.x + self.paddle1.width // 2:
+        # Check collision with left paddle using linear interpolation
+        if self.ball.x <= self.paddle1.x + self.ball.width and self.ball.prev_x > self.paddle1.x + self.ball.width:
+            t = (self.paddle1.x + self.paddle1.width - self.ball.prev_x) / (self.ball.x - self.ball.prev_x)
+            intersect_y = self.ball.prev_y + (self.ball.y - self.ball.prev_y) * t
+            if self.paddle1.y - self.ball.height <= intersect_y <= self.paddle1.y + self.paddle1.height + self.ball.height:
                 # Calculate the angle of impact
-                relative_intersect_y = (self.paddle1.y + self.paddle1.height / 2) - self.ball.y
+                relative_intersect_y = (self.paddle1.y + self.paddle1.height / 2) - intersect_y
                 normalized_intersect_y = relative_intersect_y / (self.paddle1.height / 2)
                 bounce_angle = normalized_intersect_y * math.pi / 3
                 # Adjust the velocity of the ball based on the angle of impact
                 self.ball.vel[0] = abs(self.ball.vel[0]) + BALL_SPEED_INCREASE
                 self.ball.vel[1] = -self.ball.vel[0] * math.sin(bounce_angle)
                 self.ball.x = self.paddle1.x + self.paddle1.width
+                self.ball.y = intersect_y
 
-        # Check collision with right paddle
-        if self.ball.x + self.ball.width >= self.paddle2.x:
-            if self.paddle2.y - self.ball.height <= self.ball.y <= self.paddle2.y + self.paddle2.height and self.ball.x <= self.paddle2.x + self.paddle2.width // 2:
+
+
+        # Check collision with right paddle using linear interpolation
+        if self.ball.x + self.ball.width >= self.paddle2.x and self.ball.prev_x + self.ball.width < self.paddle2.x:
+            t = (self.paddle2.x - self.ball.prev_x - self.ball.width) / (self.ball.x - self.ball.prev_x)
+            intersect_y = self.ball.prev_y + (self.ball.y - self.ball.prev_y) * t
+            if self.paddle2.y - self.ball.height <= intersect_y <= self.paddle2.y + self.paddle2.height + self.ball.height:
                 # Calculate the angle of impact
-                relative_intersect_y = (self.paddle2.y + self.paddle2.height / 2) - self.ball.y
+                relative_intersect_y = (self.paddle2.y + self.paddle2.height / 2) - intersect_y
                 normalized_intersect_y = relative_intersect_y / (self.paddle2.height / 2)
                 bounce_angle = normalized_intersect_y * math.pi / 3
                 # Adjust the velocity of the ball based on the angle of impact
                 self.ball.vel[0] = -abs(self.ball.vel[0]) - BALL_SPEED_INCREASE
                 self.ball.vel[1] = self.ball.vel[0] * math.sin(bounce_angle)
-                self.ball.x = self.paddle2.x - self.paddle2.width
+                self.ball.x = self.paddle2.x - self.ball.width
+                self.ball.y = intersect_y
+
+
+
 
         # Check collision with top/bottom walls
         if self.ball.y <= 0:

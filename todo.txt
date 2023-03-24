@@ -9,6 +9,7 @@
         -> implement linear interpolation to solve this
 
 - running headless
+- refactor to decouple
 - implement genetic algorithm AI
 - implement reinforcement learning AI
 - extra: implement NEAT AI
