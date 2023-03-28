@@ -2,10 +2,11 @@ import math
 import pygame
 
 # define colors
-black = (0, 0, 0)
-white = (255, 255, 255)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
 BALL_SPEED_INCREASE = 25
+PADDLE_SPEED = 350
 
 class Paddle:
     def __init__(self, x, y, width, height, color):
@@ -54,6 +55,12 @@ class Ball:
 
 
 class Game:
+    
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    BALL_SPEED_INCREASE = 25
+    PADDLE_SPEED = 350
+
     def __init__(self, window_width=800, window_height=600, logic_fps=120, render_fps=60):
         self.window_width = window_width
         self.window_height = window_height
@@ -63,9 +70,9 @@ class Game:
         self.render_clock = pygame.time.Clock()
         self.logic_clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
-        self.paddle1 = Paddle(50, 250, 10, 100, white)
-        self.paddle2 = Paddle(750 - 10, 250, 10, 100, white)
-        self.ball = Ball(400, 300, 10, 10, white, [175, 175], window_width, window_height)
+        self.paddle1 = Paddle(50, 250, 10, 100, WHITE)
+        self.paddle2 = Paddle(750 - 10, 250, 10, 100, WHITE)
+        self.ball = Ball(400, 300, 10, 10, WHITE, [175, 175], window_width, window_height)
         self.score1 = 0
         self.score2 = 0
 
@@ -77,7 +84,7 @@ class Game:
 
         # Draw scores
         score_text = f"{self.score1} - {self.score2}"
-        text_surface = self.font.render(score_text, True, white)
+        text_surface = self.font.render(score_text, True, WHITE)
         text_rect = text_surface.get_rect(center=(self.window_width/2, 50))
         self.screen.blit(text_surface, text_rect)
 
@@ -89,7 +96,7 @@ class Game:
 
     #         # Draw the updated game state to the screen
     #         self.render_clock.tick(self.render_fps)
-    #         self.screen.fill(black)
+    #         self.screen.fill(BLACK)
     #         self.draw_objects()
     #         pygame.display.update()
 
@@ -112,7 +119,7 @@ class Game:
                 # print("rendering frame")
                 # print("frametime: ", pygame.time.get_ticks() - last_render_time, "ms")
                 last_render_time = pygame.time.get_ticks()
-                self.screen.fill(black)
+                self.screen.fill(BLACK)
                 self.draw_objects()
                 pygame.display.update()
 
@@ -128,8 +135,8 @@ class Game:
                     return False
 
         keys = pygame.key.get_pressed()
-        self.paddle2.vel = -350 if keys[pygame.K_UP] else 350 if keys[pygame.K_DOWN] else 0
-        self.paddle1.vel = -350 if keys[pygame.K_w] else 350 if keys[pygame.K_s] else 0
+        self.paddle2.vel = -PADDLE_SPEED if keys[pygame.K_UP] else PADDLE_SPEED if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = -PADDLE_SPEED if keys[pygame.K_w] else PADDLE_SPEED if keys[pygame.K_s] else 0
 
         return True
 
@@ -204,9 +211,9 @@ if __name__ == '__main__':
     render_fps = 60
 
     # create the Pygame window
-    flags = pygame.OPENGL
-    screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
-    # screen = pygame.display.set_mode(window_size)
+    # flags = pygame.OPENGL
+    # screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
+    screen = pygame.display.set_mode(window_size)
 
     # set the window title
     pygame.display.set_caption("Pong")
