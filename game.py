@@ -128,8 +128,8 @@ class Game:
                     return False
 
         keys = pygame.key.get_pressed()
-        self.paddle2.vel = -300 if keys[pygame.K_UP] else 300 if keys[pygame.K_DOWN] else 0
-        self.paddle1.vel = -300 if keys[pygame.K_w] else 300 if keys[pygame.K_s] else 0
+        self.paddle2.vel = -350 if keys[pygame.K_UP] else 350 if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = -350 if keys[pygame.K_w] else 350 if keys[pygame.K_s] else 0
 
         return True
 
@@ -200,11 +200,13 @@ if __name__ == '__main__':
 
     # set the window size and fps
     window_size = (800, 600)
-    logic_fps = 180
+    logic_fps = 1000
     render_fps = 60
 
     # create the Pygame window
-    screen = pygame.display.set_mode(window_size)
+    flags = pygame.OPENGL
+    screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
+    # screen = pygame.display.set_mode(window_size)
 
     # set the window title
     pygame.display.set_caption("Pong")
