@@ -56,10 +56,10 @@ class Ball:
 
 class Game:
     
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-    BALL_SPEED_INCREASE = 25
-    PADDLE_SPEED = 350
+    # BLACK = (0, 0, 0)
+    # WHITE = (255, 255, 255)
+    # BALL_SPEED_INCREASE = 25
+    # PADDLE_SPEED = 350
 
     def __init__(self, window_width=800, window_height=600, logic_fps=120, render_fps=60):
         self.window_width = window_width
@@ -104,7 +104,7 @@ class Game:
     #         # Pause briefly to slow down the game loop
     #         # print("frametime: ", self.clock.tick(self.fps))
             
-    def run_decoupled_fps(self):
+    def run(self):
         last_render_time = pygame.time.get_ticks()
         while True:
             # Update game state
@@ -212,6 +212,13 @@ class Game:
         elif self.ball.x > self.window_width:
             self.score1 += 1
             self.ball.reset_position(-1)
+            
+    def get_game_data(self):
+        ball_position = (self.ball.x, self.ball.y)
+        paddles_y_position = (self.paddle1.y, self.paddle2.y)
+        ball_velocity = tuple(self.ball.vel)
+        score = (self.score1, self.score2)
+        return ball_position, paddles_y_position, ball_velocity, score
 
 
 if __name__ == '__main__':
@@ -220,16 +227,16 @@ if __name__ == '__main__':
 
     # set the window size and fps
     window_size = (800, 600)
-    logic_fps = 1000
+    logic_fps = 120
     render_fps = 60
 
     # create the Pygame window
     # flags = pygame.OPENGL
-    # screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
-    screen = pygame.display.set_mode(window_size)
+    screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
+    # screen = pygame.display.set_mode(window_size)
 
     # set the window title
     pygame.display.set_caption("Pong")
 
     game = Game(*window_size, logic_fps, render_fps)
-    game.run_decoupled_fps()
+    game.run()
