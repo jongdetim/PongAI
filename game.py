@@ -61,11 +61,9 @@ class Game:
     # BALL_SPEED_INCREASE = 25
     # PADDLE_SPEED = 350
 
-    def __init__(self, window_width=800, window_height=600, logic_fps=120, render_fps=60):
+    def __init__(self, window_width=800, window_height=600):
         self.window_width = window_width
         self.window_height = window_height
-        self.logic_fps = logic_fps
-        self.render_fps = render_fps
         self.screen = pygame.display.set_mode((self.window_width, self.window_height))
         self.render_clock = pygame.time.Clock()
         self.logic_clock = pygame.time.Clock()
@@ -89,16 +87,16 @@ class Game:
         text_rect = text_surface.get_rect(center=(self.window_width/2, 50))
         self.screen.blit(text_surface, text_rect)
 
-    def run_one_frame(self, input=None, dt=1000/60, render=False):
+    def run_one_frame(self, input=None, dt=1000/60, render=False, tickrate=60):
         '''
         Runs the game loop with a constant update step until the user quits the game.
         Can take paddle movement input as an optional argument (for AI control).
         returns false if user quits the game, true otherwise
         '''
-        self.logic_clock.tick(self.logic_fps)
+        self.logic_clock.tick(tickrate) # blocks until enough time has passed time for the next logic tick
         if not self.handle_events():
             return False
-        # have to change this to the neat model output.
+        # have to change this to the AI model output.
         if input is not None:
             self.paddle2.vel = -PADDLE_SPEED if input[0] else PADDLE_SPEED if input[1] else 0
             self.paddle1.vel = -PADDLE_SPEED if input[2] else PADDLE_SPEED if input[3] else 0
@@ -111,20 +109,20 @@ class Game:
             
         return True
       
-    def run(self):
+    def run(self, tickrate=60, render_fps=60):
         '''Runs the game loop with decoupled tickrate and fps until the user quits the game'''
         last_render_time = pygame.time.get_ticks()
         while True:
             # Update game state
             # print("updating game logic")
-            dt = self.logic_clock.tick(self.logic_fps)
+            dt = self.logic_clock.tick(tickrate)
             # print("logic tick dt: ", dt, "ms")
             if not self.handle_events():
                 break
             self.update_game_logic(dt)
             
             # Render the frame
-            if pygame.time.get_ticks() - last_render_time >= 1000 / self.render_fps:
+            if pygame.time.get_ticks() - last_render_time >= 1000 / render_fps:
                 # print("rendering frame")
                 # print("frametime: ", pygame.time.get_ticks() - last_render_time, "ms")
                 last_render_time = pygame.time.get_ticks()
@@ -236,8 +234,8 @@ if __name__ == '__main__':
 
     # set the window size and fps
     window_size = (800, 600)
-    logic_fps = 60
-    render_fps = 60
+    # logic_fps = 60
+    # render_fps = 60
 
     # create the Pygame window
     # flags = pygame.OPENGL
@@ -247,7 +245,7 @@ if __name__ == '__main__':
     # set the window title
     pygame.display.set_caption("Pong")
 
-    game = Game(*window_size, logic_fps, render_fps)
+    game = Game(*window_size)
     # game.run()
-    while game.run_one_frame(dt=1000/60, render=True):
+    while game.run_one_frame(input=None, dt=1000/60, render=True, tickrate=60):
         print(game.get_game_data())
