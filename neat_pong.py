@@ -1,6 +1,8 @@
 import pygame
 import neat
 
+from game import *
+
 # Define the fitness function for evaluating the fitness of each genome
 def evaluate_genome(genome, config):
     # Create a new neural network for this genome
@@ -42,3 +44,4 @@ while not game.done:
     state = game.get_state()
     action = net.activate(state)
     game.take_action(action)
+
