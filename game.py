@@ -8,6 +8,7 @@ WHITE = (255, 255, 255)
 BALL_SPEED_INCREASE = 25
 PADDLE_SPEED = 350
 
+
 class Paddle:
     def __init__(self, x, y, width, height, color):
         self.x = x
@@ -18,7 +19,8 @@ class Paddle:
         self.vel = 0
 
     def move(self, window_height, dt):
-        self.y = max(min(self.y + self.vel / (1000 / dt), window_height - self.height), 0)
+        self.y = max(min(self.y + self.vel / (1000 / dt),
+                     window_height - self.height), 0)
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, pygame.Rect(
@@ -55,22 +57,25 @@ class Ball:
 
 
 class Game:
-    
+
     # BLACK = (0, 0, 0)
     # WHITE = (255, 255, 255)
     # BALL_SPEED_INCREASE = 25
     # PADDLE_SPEED = 350
 
-    def __init__(self, window_width=800, window_height=600):
+    def __init__(self, window_width=800, window_height=600, render=True):
+        pygame.display.set_caption("Pong")
         self.window_width = window_width
         self.window_height = window_height
-        self.screen = pygame.display.set_mode((self.window_width, self.window_height))
+        self.screen = pygame.display.set_mode(
+            (self.window_width, self.window_height), flags=pygame.SCALED, vsync=1) if render else None
         self.render_clock = pygame.time.Clock()
         self.logic_clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
         self.paddle1 = Paddle(50, 250, 10, 100, WHITE)
         self.paddle2 = Paddle(750 - 10, 250, 10, 100, WHITE)
-        self.ball = Ball(400, 300, 10, 10, WHITE, [175, 175], window_width, window_height)
+        self.ball = Ball(400, 300, 10, 10, WHITE, [
+                         175, 175], window_width, window_height)
         self.score1 = 0
         self.score2 = 0
         self.done = False
@@ -93,22 +98,26 @@ class Game:
         Can take paddle movement input as an optional argument (for AI control).
         returns false if user quits the game, true otherwise
         '''
-        self.logic_clock.tick(tickrate) # blocks until enough time has passed time for the next logic tick
+        self.logic_clock.tick(
+            tickrate)  # blocks until enough time has passed time for the next logic tick
         if not self.handle_events():
             return False
         # have to change this to the AI model output.
         if input is not None:
-            self.paddle2.vel = -PADDLE_SPEED if input[0] else PADDLE_SPEED if input[1] else 0
-            self.paddle1.vel = -PADDLE_SPEED if input[2] else PADDLE_SPEED if input[3] else 0
-        self.update_game_logic(dt) # passes a constant dt value
+            self.paddle2.vel = - \
+                PADDLE_SPEED if input[0] else PADDLE_SPEED if input[1] else 0
+            self.paddle1.vel = - \
+                PADDLE_SPEED if input[2] else PADDLE_SPEED if input[3] else 0
+        self.update_game_logic(dt)  # passes a constant dt value
 
         if render:
             self.screen.fill(BLACK)
             self.draw_objects()
-            pygame.display.update()
-            
+            # pygame.display.update()
+            pygame.display.flip()
+
         return True
-      
+
     def run(self, tickrate=60, render_fps=60):
         '''Runs the game loop with decoupled tickrate and fps until the user quits the game'''
         last_render_time = pygame.time.get_ticks()
@@ -120,7 +129,7 @@ class Game:
             if not self.handle_events():
                 break
             self.update_game_logic(dt)
-            
+
             # Render the frame
             if pygame.time.get_ticks() - last_render_time >= 1000 / render_fps:
                 # print("rendering frame")
@@ -143,8 +152,10 @@ class Game:
 
         keys = pygame.key.get_pressed()
         # Changes paddle velocity if key is pressed
-        self.paddle2.vel = -PADDLE_SPEED if keys[pygame.K_UP] else PADDLE_SPEED if keys[pygame.K_DOWN] else 0
-        self.paddle1.vel = -PADDLE_SPEED if keys[pygame.K_w] else PADDLE_SPEED if keys[pygame.K_s] else 0
+        self.paddle2.vel = - \
+            PADDLE_SPEED if keys[pygame.K_UP] else PADDLE_SPEED if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = - \
+            PADDLE_SPEED if keys[pygame.K_w] else PADDLE_SPEED if keys[pygame.K_s] else 0
 
         return True
 
@@ -165,18 +176,22 @@ class Game:
 
     def check_collision_with_paddle1(self):
         if self.ball.x <= self.paddle1.x + self.ball.width and self.ball.prev_x > self.paddle1.x + self.ball.width:
-            t, intersect_y = self.calculate_interpolation(self.ball.prev_x, self.ball.x, self.ball.prev_y, self.ball.y, self.paddle1.x + self.paddle1.width)
+            t, intersect_y = self.calculate_interpolation(
+                self.ball.prev_x, self.ball.x, self.ball.prev_y, self.ball.y, self.paddle1.x + self.paddle1.width)
             if self.check_collision_y(intersect_y, self.paddle1):
-                bounce_angle = self.calculate_bounce_angle(intersect_y, self.paddle1)
+                bounce_angle = self.calculate_bounce_angle(
+                    intersect_y, self.paddle1)
                 self.adjust_ball_velocity(self.paddle1, bounce_angle)
                 self.ball.x = self.paddle1.x + self.paddle1.width
                 self.ball.y = intersect_y
 
     def check_collision_with_paddle2(self):
         if self.ball.x + self.ball.width >= self.paddle2.x and self.ball.prev_x + self.ball.width < self.paddle2.x:
-            t, intersect_y = self.calculate_interpolation(self.ball.prev_x + self.ball.width, self.ball.x + self.ball.width, self.ball.prev_y, self.ball.y, self.paddle2.x)
+            t, intersect_y = self.calculate_interpolation(
+                self.ball.prev_x + self.ball.width, self.ball.x + self.ball.width, self.ball.prev_y, self.ball.y, self.paddle2.x)
             if self.check_collision_y(intersect_y, self.paddle2):
-                bounce_angle = self.calculate_bounce_angle(intersect_y, self.paddle2)
+                bounce_angle = self.calculate_bounce_angle(
+                    intersect_y, self.paddle2)
                 self.adjust_ball_velocity(self.paddle2, bounce_angle)
                 self.ball.x = self.paddle2.x - self.ball.width
                 self.ball.y = intersect_y
@@ -218,7 +233,7 @@ class Game:
         elif self.ball.x > self.window_width:
             self.score1 += 1
             self.ball.reset_position(-1)
-            
+
     def get_game_data(self):
         ball_position = (self.ball.x, self.ball.y)
         paddles_y_position = (self.paddle1.y, self.paddle2.y)
@@ -237,15 +252,10 @@ if __name__ == '__main__':
     # logic_fps = 60
     # render_fps = 60
 
-    # create the Pygame window
-    # flags = pygame.OPENGL
-    screen = pygame.display.set_mode(window_size, flags=pygame.SCALED, vsync=1)
-    # screen = pygame.display.set_mode(window_size)
-
     # set the window title
-    pygame.display.set_caption("Pong")
 
-    game = Game(*window_size)
+    game = Game(*window_size, render=True)
     # game.run()
-    while game.run_one_frame(input=None, dt=1000/60, render=True, tickrate=60):
-        print(game.get_game_data())
+    while game.run_one_frame(input=None, dt=1000/144, render=True, tickrate=144):
+        # print(game.get_game_data())
+        pass
