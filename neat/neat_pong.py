@@ -24,7 +24,7 @@ def evaluate_genome(genome, config):
     return game.score
 
 # Load the NEAT configuration file
-config_path = "path/to/neat-config-file.txt"
+config_path = "./neat/neat.ini"
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 
 # Create a new population of genomes using the configuration

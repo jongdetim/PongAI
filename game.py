@@ -152,10 +152,8 @@ class Game:
 
         keys = pygame.key.get_pressed()
         # Changes paddle velocity if key is pressed
-        self.paddle2.vel = - \
-            PADDLE_SPEED if keys[pygame.K_UP] else PADDLE_SPEED if keys[pygame.K_DOWN] else 0
-        self.paddle1.vel = - \
-            PADDLE_SPEED if keys[pygame.K_w] else PADDLE_SPEED if keys[pygame.K_s] else 0
+        self.paddle2.vel = -PADDLE_SPEED if keys[pygame.K_UP] else PADDLE_SPEED if keys[pygame.K_DOWN] else 0
+        self.paddle1.vel = -PADDLE_SPEED if keys[pygame.K_w] else PADDLE_SPEED if keys[pygame.K_s] else 0
 
         return True
 
@@ -244,18 +242,9 @@ class Game:
 
 
 if __name__ == '__main__':
-    # initialize Pygame
     pygame.init()
-
-    # set the window size and fps
     window_size = (800, 600)
-    # logic_fps = 60
-    # render_fps = 60
-
-    # set the window title
-
     game = Game(*window_size, render=True)
-    # game.run()
-    while game.run_one_frame(input=None, dt=1000/144, render=True, tickrate=144):
+    while game.run_one_frame(input=None, dt=1000/60, render=True, tickrate=60):
         # print(game.get_game_data())
         pass
