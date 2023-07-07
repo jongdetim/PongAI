@@ -39,9 +39,12 @@ winner = population.run(evaluate_genome, 100)
 
 # Use the best genome found during training to play a game of Pong
 net = neat.nn.FeedForwardNetwork.create(winner, config)
-game = Game()
-while not game.done:
-    state = game.get_state()
+pygame.init()
+window_size = (800, 600)
+render = False
+game = Game(*window_size, render=render)
+running = True
+while running:
+    state = game.get_game_state()
     action = net.activate(state)
-    game.take_action(action)
-
+    running = game.run_one_frame(input=action, dt=1000/60, render=render, tickrate=60)

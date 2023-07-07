@@ -234,7 +234,7 @@ class Game:
             self.score1 += 1
             self.ball.reset_position(-1)
 
-    def get_game_data(self):
+    def get_game_state(self):
         ball_position = (self.ball.x, self.ball.y)
         paddles_y_position = (self.paddle1.y, self.paddle2.y)
         ball_velocity = tuple(self.ball.vel)
