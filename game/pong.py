@@ -100,16 +100,14 @@ class Game:
         Can take paddle movement input as an optional argument (for AI control).
         returns false if user quits the game, true otherwise
         '''
-        self.logic_clock.tick(
-            tickrate)  # blocks until enough time has passed time for the next logic tick
+        self.logic_clock.tick(tickrate)
+        # blocks until enough time has passed time for the next logic tick
         if not self.handle_events():
+            self.done = True
             return False
-        # have to change this to the AI model output.
+        # input is 1 for up, 2 for down, 0 for no input
         if input is not None:
-            self.paddle2.vel = - \
-                PADDLE_SPEED if input[0] else PADDLE_SPEED if input[1] else 0
-            self.paddle1.vel = - \
-                PADDLE_SPEED if input[2] else PADDLE_SPEED if input[3] else 0
+            self.paddle1.vel = -PADDLE_SPEED if input == 1 else PADDLE_SPEED if input == 2 else 0
         self.update_game_logic(dt)  # passes a constant dt value
 
         if render:
