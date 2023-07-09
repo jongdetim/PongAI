@@ -43,7 +43,7 @@ def evaluate_genomes(genomes, config):
         # only works for left paddle!!
 
 # Load the NEAT configuration file
-config_path = "./neat/neat.ini"
+config_path = "./neat/config.ini"
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 config.genome_config.add_activation('leakyrelu', leaky_relu)
 
@@ -54,6 +54,7 @@ population = neat.Population(config)
 # Add a reporter to output the progress of the algorithm during training
 stats = neat.StatisticsReporter()
 population.add_reporter(stats)
+population.add_reporter(neat.StdOutReporter(True))
 
 # initialize pygame
 pygame.init()
