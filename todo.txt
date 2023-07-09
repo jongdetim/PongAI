@@ -9,5 +9,6 @@
 
 ^^^____DONE____^^^
 
-- extra: implement NEAT AI
+- add options to game init, like setting perfect paddles, ai or human players (keyboard input)
+- implement NEAT AI
 - implement reinforcement learning AI

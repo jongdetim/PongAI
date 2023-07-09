@@ -25,6 +25,8 @@ class Paddle:
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, pygame.Rect(
             round(self.x), round(self.y), self.width, self.height))
+        
+
 
 
 class Ball:
@@ -233,12 +235,8 @@ class Game:
             self.ball.reset_position(-1)
 
     def get_game_state(self):
-        ball_position = (self.ball.x, self.ball.y)
-        paddles_y_position = (self.paddle1.y, self.paddle2.y)
-        ball_velocity = tuple(self.ball.vel)
-        score = (self.score1, self.score2)
-        # should probably return a dictionary for the neat algorithm
-        return ball_position, paddles_y_position, ball_velocity, score
+        return [self.ball.x, self.ball.y, self.ball.vel[0], self.ball.vel[1], \
+                    self.paddle1.y, self.paddle2.y]
 
 
 if __name__ == '__main__':

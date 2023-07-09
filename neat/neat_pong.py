@@ -10,16 +10,15 @@ def evaluate_genome(genome, config):
 
     # Initialize the game and play a game using the neural network
     game = Game()
-    running = True
-    while running:
+    while not game.done:
         # Get the current state of the game
-        state = game.get_state()
+        state = game.get_game_state()
 
         # Feed the state through the neural network to get the action
         action = net.activate(state)
 
         # Take the action in the game
-        running = game.run_one_frame(input=action, dt=1000/60, render=render, tickrate=60)
+        game.run_one_frame(input=action, dt=1000/60, render=render, tickrate=60)
 
     # Return the fitness of the genome (in this case, the score of the game)
     return game.score
