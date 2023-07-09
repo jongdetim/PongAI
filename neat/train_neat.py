@@ -24,7 +24,7 @@ def evaluate_genomes(genomes, config):
         net = neat.nn.FeedForwardNetwork.create(genome, config)
 
         # Initialize the game and play a game using the neural network
-        game = Game(*window_size, render=True)
+        game = Game(*window_size, render=True, player2=GodPaddle())
         while not game.done:
             # Get the current state of the game
             state = game.get_game_state()
@@ -36,7 +36,7 @@ def evaluate_genomes(genomes, config):
             action = np.argmax(action)
 
             # Take the action in the game
-            game.run_one_frame(input=action, dt=1000/60, render=True, tickrate=60)
+            game.run_one_frame(bot_input=action, dt=1000/60, render=True, tickrate=60)
 
         # set the fitness of the genome (in this case, the score of the game)
         genome.fitness = game.score1

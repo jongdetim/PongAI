@@ -8,27 +8,6 @@ WHITE = (255, 255, 255)
 BALL_SPEED_INCREASE = 25
 PADDLE_SPEED = 350
 
-
-class Paddle:
-    def __init__(self, x, y, width, height, color):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.vel = 0
-
-    def move(self, window_height, dt):
-        self.y = max(min(self.y + self.vel / (1000 / dt),
-                     window_height - self.height), 0)
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, pygame.Rect(
-            round(self.x), round(self.y), self.width, self.height))
-        
-
-
-
 class Ball:
     def __init__(self, x, y, width, height, color, vel, window_width, window_height):
         self.x = x
@@ -57,6 +36,33 @@ class Ball:
         pygame.draw.rect(screen, self.color, pygame.Rect(
             round(self.x), round(self.y), self.width, self.height))
 
+class Paddle:
+    def __init__(self, x, y, width, height, color):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.vel = 0
+
+    def move(self, window_height, dt):
+        self.y = max(min(self.y + self.vel / (1000 / dt),
+                     window_height - self.height), 0)
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, pygame.Rect(
+            round(self.x), round(self.y), self.width, self.height))
+        
+class GodPaddle(Paddle):
+    def __init__(self, x, y, width, height, color):
+        super().__init__(x, y, width, height, color)
+        
+    def move(self, *args):
+        pass
+
+    def draw(self, *args):
+        super().draw(*args)
+
 
 class Game:
 
@@ -65,7 +71,7 @@ class Game:
     # BALL_SPEED_INCREASE = 25
     # PADDLE_SPEED = 350
 
-    def __init__(self, window_width=800, window_height=600, render=True):
+    def __init__(self, window_width=800, window_height=600, render=True, player1: Paddle=None, player2: Paddle=None):
         pygame.display.set_caption("Pong")
         self.window_width = window_width
         self.window_height = window_height
@@ -74,8 +80,16 @@ class Game:
         self.render_clock = pygame.time.Clock()
         self.logic_clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
-        self.paddle1 = Paddle(50, 250, 10, 100, WHITE)
-        self.paddle2 = Paddle(750 - 10, 250, 10, 100, WHITE)
+        # initialize paddles and ball
+        if player1 is None:
+            self.paddle1 = Paddle(50, 250, 10, 100, WHITE)
+        else:
+            self.paddle1 = player1
+        if player2 is None:
+            self.paddle2 = Paddle(750 - 10, 250, 10, 100, WHITE)
+        else:
+            self.paddle2 = player2
+
         self.ball = Ball(400, 300, 10, 10, WHITE, [
                          175, 175], window_width, window_height)
         self.score1 = 0
@@ -94,7 +108,7 @@ class Game:
         text_rect = text_surface.get_rect(center=(self.window_width/2, 50))
         self.screen.blit(text_surface, text_rect)
 
-    def run_one_frame(self, input=None, dt=1000/60, render=False, tickrate=60):
+    def run_one_frame(self, bot_input=None, dt=1000/60, render=False, tickrate=60):
         '''
         Runs the game loop with a constant update step until the user quits the game.
         Can take paddle movement input as an optional argument (for AI control).
@@ -106,7 +120,7 @@ class Game:
             self.done = True
             return False
         # input is 1 for up, 2 for down, 0 for no input
-        if input is not None:
+        if bot_input is not None:
             self.paddle1.vel = -PADDLE_SPEED if input == 1 else PADDLE_SPEED if input == 2 else 0
         self.update_game_logic(dt)  # passes a constant dt value
 
