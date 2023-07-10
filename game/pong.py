@@ -161,25 +161,30 @@ class Game:
         Can take paddle movement input as an optional argument (for AI control).
         returns false if user quits the game, true otherwise
         '''
-        self.logic_clock.tick(tickrate)
-        # blocks until enough time has passed time for the next logic tick
-        if not self.handle_events():
+        try:
+            self.logic_clock.tick(tickrate)
+            # blocks until enough time has passed time for the next logic tick
+            if not self.handle_events():
+                self.done = True
+                return False
+            # input is 1 for up, 2 for down, 0 for no input
+            if bot_input is not None:
+                self.paddle1.vel = -self.PADDLE_SPEED if bot_input == 1 else self.PADDLE_SPEED if bot_input == 2 else 0
+            self.update_game_logic(dt)  # passes a constant dt value
+            if self.check_game_over():
+                return False
+
+            if render:
+                self.screen.fill(self.BLACK)
+                self.draw_objects()
+                # pygame.display.update()
+                pygame.display.flip()
+
+            return True
+        except:
+            print("stopping in game loop due to exception!")
             self.done = True
             return False
-        # input is 1 for up, 2 for down, 0 for no input
-        if bot_input is not None:
-            self.paddle1.vel = -self.PADDLE_SPEED if bot_input == 1 else self.PADDLE_SPEED if bot_input == 2 else 0
-        self.update_game_logic(dt)  # passes a constant dt value
-        if self.check_game_over():
-            return False
-
-        if render:
-            self.screen.fill(self.BLACK)
-            self.draw_objects()
-            # pygame.display.update()
-            pygame.display.flip()
-
-        return True
 
     def run(self, tickrate=60, render_fps=60):
         '''Runs the game loop with decoupled tickrate and fps until the user quits the game'''
@@ -263,6 +268,7 @@ class Game:
                     self.paddle1.y, self.paddle2.y]
         
     def get_scaled_game_state(self):
+        # seems bugged. maybe because of int division instead of floats?
         return [self.ball.x / 800, self.ball.y / 600, self.ball.vel[0] / 300, self.ball.vel[1] / 300, \
                     self.paddle1.y / 600, self.paddle2.y / 600]
 
