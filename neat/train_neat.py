@@ -38,10 +38,10 @@ def evaluate_genomes(genomes, config):
         net = neat.nn.FeedForwardNetwork.create(genome, config)
 
         # Initialize the game and play a game using the neural network
-        game = Game(*window_size, render=True, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
+        game = Game(*window_size, render=False, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
         while not game.done:
             # Get the current state of the game
-            state = game.get_game_state()
+            state = game.get_scaled_game_state()
             # print("game state:", state)
 
             # Feed the state through the neural network to get the action
@@ -52,7 +52,7 @@ def evaluate_genomes(genomes, config):
             action = np.argmax(action)
 
             # Take the action in the game
-            game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=1000000000)
+            game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=10000000000000)
 
         # set the fitness of the genome
         genome.fitness = game.paddle1.hits
@@ -64,13 +64,13 @@ def evaluate_genome(genome, config):
     # Create a new neural network for this genome
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     
-    pygame.font.init()
+    pygame.init()
 
     # Initialize the game and play a game using the neural network
-    game = Game(*window_size, render=True, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
+    game = Game(*window_size, render=False, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
     while not game.done:
         # Get the current state of the game
-        state = game.get_game_state()
+        state = game.get_scaled_game_state()
         # print("game state:", state)
 
         # Feed the state through the neural network to get the action
@@ -81,10 +81,12 @@ def evaluate_genome(genome, config):
         action = np.argmax(action)
 
         # Take the action in the game
-        game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=1000000000000)
+        game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=1000000000000000)
+
+    # pygame.display.quit()
 
     # set the fitness of the genome
-    print(game.paddle1.hits)
+    # print(game.paddle1.hits)
     return game.paddle1.hits
     # only works for left paddle!! and counts the amount of hits, not the actual game score.
 
@@ -113,7 +115,7 @@ def run():
 
     # Run the NEAT algorithm on multiple cores for up to x generations
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
-    winner = population.run(pe.evaluate, 40)
+    winner = population.run(pe.evaluate, 30)
 
     print("winner fitness:", winner.fitness)
     print(winner)
@@ -122,6 +124,7 @@ def run():
     net = neat.nn.FeedForwardNetwork.create(winner, config)
 
     render = True
+    pygame.display.quit()
     game = Game(*window_size, render=render)
 
     while not game.done:
