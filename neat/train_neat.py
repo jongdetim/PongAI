@@ -5,6 +5,8 @@ import multiprocessing
 here = os.path.dirname(__file__)
 sys.path.append(os.path.join(here, '..'))
 
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+
 import pygame
 import numpy as np
 import neat
@@ -41,7 +43,7 @@ def evaluate_genomes(genomes, config):
         game = Game(*window_size, render=False, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
         while not game.done:
             # Get the current state of the game
-            state = game.get_scaled_game_state()
+            state = game.get_game_state()
             # print("game state:", state)
 
             # Feed the state through the neural network to get the action
@@ -56,7 +58,7 @@ def evaluate_genomes(genomes, config):
 
         # set the fitness of the genome
         genome.fitness = game.paddle1.hits
-        print(game.paddle1.hits)
+        # print(game.paddle1.hits)
         # only works for left paddle!! and counts the amount of hits, not the actual game score.
 
 # Define the fitness function for evaluating the fitness of each genome
@@ -110,12 +112,12 @@ def run():
     # initialize pygame
     pygame.init()
 
-    # Run the NEAT algorithm for up to x generations
+    # Run the NEAT algorithm for up to x generations (SINGLE PROCESS)
     # winner = population.run(evaluate_genomes, 20)
 
-    # Run the NEAT algorithm on multiple cores for up to x generations
+    # MULTI PROCESSING
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
-    winner = population.run(pe.evaluate, 50)
+    winner = population.run(pe.evaluate, 20)
 
     print("winner fitness:", winner.fitness)
     print(winner)
