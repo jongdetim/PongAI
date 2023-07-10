@@ -70,7 +70,7 @@ def evaluate_genome(genome, config):
     game = Game(*window_size, render=False, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
     while not game.done:
         # Get the current state of the game
-        state = game.get_scaled_game_state()
+        state = game.get_game_state()
         # print("game state:", state)
 
         # Feed the state through the neural network to get the action
@@ -115,7 +115,7 @@ def run():
 
     # Run the NEAT algorithm on multiple cores for up to x generations
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
-    winner = population.run(pe.evaluate, 30)
+    winner = population.run(pe.evaluate, 50)
 
     print("winner fitness:", winner.fitness)
     print(winner)
@@ -128,7 +128,7 @@ def run():
     game = Game(*window_size, render=render)
 
     while not game.done:
-        state = game.get_scaled_game_state()
+        state = game.get_game_state()
         action = net.activate(state[0:5])
         action = np.argmax(action)
         game.run_one_frame(bot_input=action, dt=1000/60, render=render, tickrate=60)
