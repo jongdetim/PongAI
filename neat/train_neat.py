@@ -43,7 +43,7 @@ def evaluate_genomes(genomes, config):
         game = Game(*window_size, render=False, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
         while not game.done:
             # Get the current state of the game
-            state = game.get_game_state()
+            state = game.get_scaled_game_state()
             # print("game state:", state)
 
             # Feed the state through the neural network to get the action
@@ -103,7 +103,7 @@ def run():
 
     # Create a new population of genomes using the configuration
     population = neat.Population(config)
-    # population = neat.Checkpointer.restore_checkpoint('neat-checkpoint-59')
+    # population = neat.Checkpointer.restore_checkpoint('gen50-fitness50')
 
     # Add a reporter to output the progress of the algorithm during training
     stats = neat.StatisticsReporter()
@@ -119,10 +119,12 @@ def run():
 
     # MULTI PROCESSING
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
-    winner = population.run(pe.evaluate, 30)
+    winner = population.run(pe.evaluate, 31)
 
-    print("winner fitness:", winner.fitness)
+    print("final gen winner fitness:", winner.fitness)
     print(winner)
+    print("all time fittest:", population.reporters.reporters[0].best_genome())
+    winner = population.reporters.reporters[0].best_genome()
 
     # Use the best genome found during training to play a game of Pong
     net = neat.nn.FeedForwardNetwork.create(winner, config)
@@ -130,6 +132,7 @@ def run():
     render = True
     # pygame.display.quit()
     game = Game(*window_size, render=render, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
+    # game = Game(*window_size, render=render, vsync=True)
     
     print(game.get_scaled_game_state())
 
