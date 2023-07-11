@@ -6,9 +6,9 @@
 - even with at 300 game logic update per second, the ball jumps over the paddle at higher speeds.
         -> implement linear interpolation to solve this
 - refactor to decouple
+- add options to game init, like setting perfect paddles, ai or human players (keyboard input)
+- implement NEAT AI
 
 ^^^____DONE____^^^
 
-- add options to game init, like setting perfect paddles, ai or human players (keyboard input)
-- implement NEAT AI
 - implement reinforcement learning AI

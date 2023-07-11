@@ -263,8 +263,12 @@ class Game:
                     self.paddle1.y, self.paddle2.y]
         
     def get_scaled_game_state(self):
-        return [self.ball.x / 800, self.ball.y / 600, self.ball.vel[0] / 300, self.ball.vel[1] / 300, \
-                    self.paddle1.y / 600, self.paddle2.y / 600]
+        return [(self.ball.x - 400) / 800,
+                (self.ball.y - 300) / 600,
+                self.ball.vel[0] / 600,
+                self.ball.vel[1] / 600,
+                (self.paddle1.y - 300) / 600,
+                (self.paddle2.y - 300) / 600]
 
 
 def calculate_interpolation(x1, x2, y1, y2, target_x):

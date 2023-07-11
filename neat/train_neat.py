@@ -62,7 +62,7 @@ def evaluate_genomes(genomes, config):
         # only works for left paddle!! and counts the amount of hits, not the actual game score.
 
 # Define the fitness function for evaluating the fitness of each genome
-def evaluate_genome(genome, config):        
+def evaluate_genome(genome, config):
     # Create a new neural network for this genome
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     
@@ -83,7 +83,7 @@ def evaluate_genome(genome, config):
         action = np.argmax(action)
 
         # Take the action in the game
-        game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=1000000000000000)
+        game.run_one_frame(bot_input=action, dt=1000/60, render=False, tickrate=100000000000000000)
 
     # pygame.display.quit()
 
@@ -103,11 +103,13 @@ def run():
 
     # Create a new population of genomes using the configuration
     population = neat.Population(config)
+    # population = neat.Checkpointer.restore_checkpoint('neat-checkpoint-59')
 
     # Add a reporter to output the progress of the algorithm during training
     stats = neat.StatisticsReporter()
     population.add_reporter(stats)
     population.add_reporter(neat.StdOutReporter(True))
+    population.add_reporter(neat.Checkpointer(10))
 
     # initialize pygame
     pygame.init()
@@ -117,7 +119,7 @@ def run():
 
     # MULTI PROCESSING
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
-    winner = population.run(pe.evaluate, 20)
+    winner = population.run(pe.evaluate, 30)
 
     print("winner fitness:", winner.fitness)
     print(winner)
@@ -126,14 +128,16 @@ def run():
     net = neat.nn.FeedForwardNetwork.create(winner, config)
 
     render = True
-    pygame.display.quit()
-    game = Game(*window_size, render=render)
+    # pygame.display.quit()
+    game = Game(*window_size, render=render, player2=GodPaddle(750 - 10, 0, 10, 600, Game.WHITE, False), vsync=False)
+    
+    print(game.get_scaled_game_state())
 
     while not game.done:
         state = game.get_game_state()
         action = net.activate(state[0:5])
         action = np.argmax(action)
-        game.run_one_frame(bot_input=action, dt=1000/60, render=render, tickrate=60)
+        game.run_one_frame(bot_input=action, dt=1000/60, render=render, tickrate=500)
 
 if __name__ == "__main__":
     run()
